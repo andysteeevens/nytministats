@@ -8,12 +8,13 @@ from datetime import datetime, timedelta
 import requests
 #from dotenv import load_dotenv
 from tqdm import tqdm
+import api_functions
 
 #load_dotenv()
 
-API_ROOT = "http://www.nytimes.com/svc/crosswords"
-PUZZLE_INFO = API_ROOT + "/v3/puzzles.json"
-PUZZLE_DETAIL = API_ROOT + "/v6/game/"
+# API_ROOT = "http://www.nytimes.com/svc/crosswords"
+# PUZZLE_INFO = API_ROOT + "/v3/puzzles.json"
+# PUZZLE_DETAIL = API_ROOT + "/v6/game/"
 
 DATE_FORMAT = "%Y-%m-%d"
 
@@ -27,31 +28,31 @@ parser.add_argument("-e", "--end-date", help="The last date to pull from, inclus
 parser.add_argument("-o", "--output-csv", help="The CSV file to write to", default="data.csv")
 parser.add_argument("-t", "--type", help='The type of puzzle data to fetch. Valid values are "daily", "bonus", and "mini" (defaults to daily)', default="mini",)
 
-def get_v3_puzzle_overview(puzzle_type, start_date, end_date, cookie):
-    payload = {
-        "publish_type": puzzle_type,
-        "sort_order": "asc",
-        "sort_by": "print_date",
-        "date_start": start_date.strftime("%Y-%m-%d"),
-        "date_end": end_date.strftime("%Y-%m-%d"),
-    }
+# def get_v3_puzzle_overview(puzzle_type, start_date, end_date, cookie):
+#     payload = {
+#         "publish_type": puzzle_type,
+#         "sort_order": "asc",
+#         "sort_by": "print_date",
+#         "date_start": start_date.strftime("%Y-%m-%d"),
+#         "date_end": end_date.strftime("%Y-%m-%d"),
+#     }
 
-    overview_resp = requests.get(PUZZLE_INFO, params=payload, cookies={"NYT-S": cookie})
+#     overview_resp = requests.get(PUZZLE_INFO, params=payload, cookies={"NYT-S": cookie})
 
-    ##
-    overview_resp.raise_for_status()
-    puzzle_info = overview_resp.json().get("results")
-    return puzzle_info
+#     ##
+#     overview_resp.raise_for_status()
+#     puzzle_info = overview_resp.json().get("results")
+#     return puzzle_info
 
-def get_v3_puzzle_detail(puzzle_id, cookie):
-    puzzle_resp = requests.get(
-        f"{PUZZLE_DETAIL}/{puzzle_id}.json", cookies={"NYT-S": cookie}
-    )
+# def get_v3_puzzle_detail(puzzle_id, cookie):
+#     puzzle_resp = requests.get(
+#         f"{PUZZLE_DETAIL}/{puzzle_id}.json", cookies={"NYT-S": cookie}
+#     )
 
-    puzzle_resp.raise_for_status()
-    puzzle_detail = puzzle_resp.json()["calcs"]
+#     puzzle_resp.raise_for_status()
+#     puzzle_detail = puzzle_resp.json()["calcs"]
 
-    return puzzle_detail
+#     return puzzle_detail
 
 
 if __name__ == "__main__":
@@ -95,7 +96,7 @@ if __name__ == "__main__":
     print("\nGetting puzzle solve times\n")
 
     for puzzle in tqdm(puzzle_overview):
-        detail = get_v3_puzzle_detail(puzzle_id=puzzle["puzzle_id"], cookie=cookie)
+        detail = api_functions.get_v3_puzzle_detail(puzzle_id=puzzle["puzzle_id"], cookie=cookie)
         puzzle["solving_seconds"] = detail.get("secondsSpentSolving", None)
         puzzle["day_of_week_name"] = datetime.strptime(puzzle["print_date"], DATE_FORMAT).strftime('%A')
         puzzle["day_of_week_integer"] = datetime.strptime(puzzle["print_date"], DATE_FORMAT).strftime('%w')
