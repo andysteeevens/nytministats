@@ -1,4 +1,4 @@
-cookie = "0^CBYSLQj8qfiuBhCquviuBhoSMS2raA3FnVqKwvvE5gwCIH6TIO2p7Uc4wLGM_QVCABpAfE68Ql-DJCT0W5IHs7fWsvegp-08_ZmvPmeaIYAQl5e4shVbKwnHdGpCGGaKgBYG49lYtag0gzyCtbb-bBm5Aw=="
+cookie =  "0^CBYSLQj8qfiuBhCquviuBhoSMS2raA3FnVqKwvvE5gwCIH6TIO2p7Uc4wLGM_QVCABpAfE68Ql-DJCT0W5IHs7fWsvegp-08_ZmvPmeaIYAQl5e4shVbKwnHdGpCGGaKgBYG49lYtag0gzyCtbb-bBm5Aw=="
 
 import argparse
 #import os
@@ -17,14 +17,15 @@ PUZZLE_DETAIL = API_ROOT + "/v6/game/"
 
 DATE_FORMAT = "%Y-%m-%d"
 
+lookback = 5 #int(input("How many days in the past would you like to pull date for? (ex: 30): "))
+
 parser = argparse.ArgumentParser(description="Fetch NYT Crossword stats")
 parser.add_argument("-u", "--username", help="NYT Account Email Address")
 parser.add_argument("-p", "--password", help="NYT Account Password")
-parser.add_argument("-s", "--start-date", help="The first date to pull from, inclusive (defaults to 30 days ago)", default=datetime.strftime(datetime.now() - timedelta(days=9), DATE_FORMAT),)
+parser.add_argument("-s", "--start-date", help="The first date to pull from, inclusive (defaults to 30 days ago)", default=datetime.strftime(datetime.now() - timedelta(days=lookback), DATE_FORMAT),)
 parser.add_argument("-e", "--end-date", help="The last date to pull from, inclusive (defaults to today)", default=datetime.strftime(datetime.now(), DATE_FORMAT),)
 parser.add_argument("-o", "--output-csv", help="The CSV file to write to", default="data.csv")
 parser.add_argument("-t", "--type", help='The type of puzzle data to fetch. Valid values are "daily", "bonus", and "mini" (defaults to daily)', default="mini",)
-parser.add_argument("-l", "--last", help="How many days ago to pull", default=90,)
 
 def get_v3_puzzle_overview(puzzle_type, start_date, end_date, cookie):
     payload = {
@@ -41,7 +42,6 @@ def get_v3_puzzle_overview(puzzle_type, start_date, end_date, cookie):
     overview_resp.raise_for_status()
     puzzle_info = overview_resp.json().get("results")
     return puzzle_info
-
 
 def get_v3_puzzle_detail(puzzle_id, cookie):
     puzzle_resp = requests.get(
@@ -60,7 +60,7 @@ if __name__ == "__main__":
     # if not cookie:
     #     cookie = login(args.username, args.password)
     # print(cookie)
-    start_date = datetime.strptime(args.start_date, DATE_FORMAT)
+    start_date = datetime.strptime(args.start_date, DATE_FORMAT) 
     end_date = datetime.strptime(args.end_date, DATE_FORMAT)
 
     days_between = (end_date - start_date).days
@@ -100,22 +100,8 @@ if __name__ == "__main__":
         puzzle["day_of_week_name"] = datetime.strptime(puzzle["print_date"], DATE_FORMAT).strftime('%A')
         puzzle["day_of_week_integer"] = datetime.strptime(puzzle["print_date"], DATE_FORMAT).strftime('%w')
 
-    fields = [
-        "author", #
-        "editor", #
-        "format_type", #
-        "print_date",
-        "day_of_week_name",
-        "day_of_week_integer",
-        "publish_type", #
-        "puzzle_id", #
-        "title", #
-        "version", #
-        "percent_filled", #
-        "solved",
-        "star", #
-        "solving_seconds",
-    ]
+    fields = ["author", "editor", "format_type", "print_date","day_of_week_name","day_of_week_integer","publish_type", "puzzle_id", 
+              "title", "version", "percent_filled", "solved","star", "solving_seconds",]
 
     print("Writing stats to {}".format(args.output_csv))
 
